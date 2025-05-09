@@ -1,1 +1,0 @@
-# ksiega-ramzi.github.io
