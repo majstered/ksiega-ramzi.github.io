@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Księga Ramziego</title>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js" type="module"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js" type="module"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <style>
     body { font-family: sans-serif; background: #fef4d1; padding: 20px; }
     .entry { background: #fff3ce; margin-bottom: 10px; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -18,10 +18,7 @@
   <button onclick="addEntry()">Dodaj wpis</button>
   <div id="entries"></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDRR3vSfgpEmbpZz_-VldMTnTHoXRfuGKg",
       authDomain: "ksiega-ramzi.firebaseapp.com",
@@ -31,24 +28,25 @@
       appId: "1:400735142662:web:0b52a57f4fedf367839487"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const wpisyCol = collection(db, "wpisy");
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
     async function addEntry() {
       const text = document.getElementById("entry").value;
       if (text.trim()) {
-        await addDoc(wpisyCol, { text, created: serverTimestamp() });
+        await db.collection("wpisy").add({
+          text,
+          created: firebase.firestore.FieldValue.serverTimestamp()
+        });
         document.getElementById("entry").value = "";
         loadEntries();
       }
     }
 
     async function loadEntries() {
-      const q = query(wpisyCol, orderBy("created", "desc"));
-      const snapshot = await getDocs(q);
       const container = document.getElementById("entries");
       container.innerHTML = "";
+      const snapshot = await db.collection("wpisy").orderBy("created", "desc").get();
       snapshot.forEach(doc => {
         const div = document.createElement("div");
         div.className = "entry";
