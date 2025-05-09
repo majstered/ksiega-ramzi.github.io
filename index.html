@@ -7,9 +7,35 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <style>
     body { font-family: sans-serif; background: #fef4d1; padding: 20px; }
-    .entry { background: #fff3ce; margin-bottom: 10px; padding: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .entry {
+      background: #fff3ce;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+    }
     textarea { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; }
-    button { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; }
+    button {
+      padding: 10px 20px;
+      background: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .delete-button {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      background: #cc0000;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -43,14 +69,32 @@
       }
     }
 
+    async function deleteEntry(id) {
+      const pass = prompt("Podaj hasło, aby usunąć wpis:");
+      if (pass === "ramzi123") {
+        await db.collection("wpisy").doc(id).delete();
+        loadEntries();
+      } else {
+        alert("Błędne hasło. Nie usunięto wpisu.");
+      }
+    }
+
     async function loadEntries() {
       const container = document.getElementById("entries");
       container.innerHTML = "";
       const snapshot = await db.collection("wpisy").orderBy("created", "desc").get();
       snapshot.forEach(doc => {
+        const data = doc.data();
         const div = document.createElement("div");
         div.className = "entry";
-        div.textContent = doc.data().text;
+        div.textContent = data.text;
+
+        const btn = document.createElement("button");
+        btn.textContent = "Usuń";
+        btn.className = "delete-button";
+        btn.onclick = () => deleteEntry(doc.id);
+        div.appendChild(btn);
+
         container.appendChild(div);
       });
     }
